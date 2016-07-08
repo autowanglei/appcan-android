@@ -25,6 +25,7 @@ import android.webkit.WebView;
 import org.zywx.wbpalmstar.base.BDebug;
 import org.zywx.wbpalmstar.engine.EBrowserView;
 import org.zywx.wbpalmstar.engine.ELinkedList;
+import org.zywx.wbpalmstar.engine.webview.ACEWebView;
 import org.zywx.wbpalmstar.widgetone.WidgetOneApplication;
 
 import java.lang.reflect.Constructor;
@@ -153,7 +154,7 @@ public class EUExManager {
         }
     }
 
-    public void notifyDestroy(WebView view) {
+    public void notifyDestroy(ACEWebView view) {
         notifyDocChange();
         for (EUExBase uex : mThirdPlugins) {
             if (Build.VERSION.SDK_INT >= 11) {

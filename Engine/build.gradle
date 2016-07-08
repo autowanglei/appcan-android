@@ -1,12 +1,29 @@
+buildscript {
+    repositories {
+        jcenter()
+    }
+    dependencies {
+        classpath 'com.android.tools.build:gradle:2.1.2'
+
+        // NOTE: Do not place your application dependencies here; they belong
+        // in the individual module build.gradle files
+    }
+}
 import proguard.gradle.ProGuardTask
 
 apply plugin: 'com.android.application'
 
 dependencies {
-    compile fileTree(dir: 'libs', include: '*.jar',exclude:'android-support-v4.jar')
+    compile fileTree(include: '*.jar', exclude: 'android-support-v4.jar', dir: 'libs')
     compile 'com.android.support:support-v4:23.1.0'
+    compile files('libs/libacedes_for_crosswalk.jar')
+    compile(name: 'crosswalk-19.49.514.0', ext: 'aar')
 }
-
+repositories {
+    flatDir {
+        dirs 'libs'
+    }
+}
 android {
     compileSdkVersion 22
     buildToolsVersion '23.0.2'
@@ -76,15 +93,8 @@ task makeJar(type:Jar,dependsOn:['compileReleaseJavaWithJavac']) {
     from('build/intermediates/classes/release/')
     destinationDir=file('build/libs')
     //打包到jar后的目录结构
-//    into('')
-    //去掉不需要打包的目录和文件
-//    exclude('test/', 'BuildConfig.class', 'R.class')
-    //去掉R$开头的文件
-//    exclude{ it.name.startsWith('R$');}
     exclude('**/R.class')
     exclude('**/R\$*.class')
-//    include('com/slidingmenu/lib/*')
-//    include('org/zywx/wbpalmstar/*')
 }
 
 makeJar.dependsOn(clearJar)
@@ -92,9 +102,10 @@ makeJar.dependsOn(clearJar)
 def androidSDKDir = plugins.getPlugin('com.android.application').sdkHandler.getSdkFolder()
 def androidJarDir = androidSDKDir.toString() + '/platforms/' + "${android.compileSdkVersion}" + '/android.jar'
 
-task proguardMyLib(type: ProGuardTask, dependsOn: ['makeJar']) {
+task proguardEngineJar(type: ProGuardTask, dependsOn: ['makeJar']) {
     injars('build/libs/AppCanEngine_un_pro.jar')
     outjars('build/libs/AppCanEngine.jar')
+    libraryjars('libs/crosswalk-19.49.514.0.aar')
     libraryjars(androidJarDir)
     configuration 'proguard.pro'
 }

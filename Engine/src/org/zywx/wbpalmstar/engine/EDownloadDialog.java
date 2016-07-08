@@ -31,6 +31,7 @@ import java.util.zip.GZIPInputStream;
 import org.apache.http.cookie.SM;
 import org.apache.http.protocol.HTTP;
 import org.zywx.wbpalmstar.engine.universalex.EUExUtil;
+import org.zywx.wbpalmstar.engine.webview.ACEWebConst;
 
 import android.app.ProgressDialog;
 import android.content.Context;
@@ -158,7 +159,7 @@ public class EDownloadDialog extends ProgressDialog implements Runnable {
             mConnection.setUseCaches(false);
             mConnection.setRequestProperty("Connection", "Keep-Alive");
             mConnection.setRequestProperty("Charset", HTTP.UTF_8);
-            mConnection.setRequestProperty("User-Agent", EBrowserSetting.USERAGENT_NEW);
+            mConnection.setRequestProperty("User-Agent", ACEWebConst.USERAGENT);
             mConnection.setReadTimeout(1000 * 30);
             mConnection.setConnectTimeout(1000 * 30);
             mConnection.setInstanceFollowRedirects(false);

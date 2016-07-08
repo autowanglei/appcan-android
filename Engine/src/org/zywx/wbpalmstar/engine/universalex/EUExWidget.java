@@ -205,7 +205,7 @@ public class EUExWidget extends EUExBase {
         }
         widgetData.m_appdebug = debug;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-            mBrwView.setWebContentsDebuggingEnabled(debug == 1 ? true : false);
+            mBrwView.setRemoteDebuggingEnabled(debug == 1 ? true : false);
         }
     }
 

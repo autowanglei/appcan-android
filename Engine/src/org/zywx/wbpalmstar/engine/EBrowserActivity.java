@@ -37,6 +37,7 @@ import android.support.v4.content.LocalBroadcastManager;
 import android.view.KeyEvent;
 import android.view.Surface;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
 import android.webkit.ValueCallback;
@@ -103,7 +104,7 @@ public final class EBrowserActivity extends FragmentActivity {
     public SlidingMenu globalSlidingMenu;
     private ValueCallback<Uri> mUploadMessage;
     private boolean mLoadingRemoved = false;
-
+    View splash;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(null);
@@ -125,7 +126,7 @@ public final class EBrowserActivity extends FragmentActivity {
         ESystemInfo.getIntence().init(this);
         mBrowser = new EBrowser(this);
         mEHandler = new EHandler(Looper.getMainLooper());
-        View splash = initEngineUI();
+        splash = initEngineUI();
         mBrowserAround = new EBrowserAround(splash);
 //		mScreen.setVisibility(View.INVISIBLE);
         setContentView(mScreen);
@@ -246,6 +247,12 @@ public final class EBrowserActivity extends FragmentActivity {
     }
 
     public void setContentViewVisible(int delayTime) {
+        if (splash!=null){
+            ViewGroup viewParent= (ViewGroup) splash.getParent();
+            if (viewParent!=null){
+                viewParent.removeView(splash);
+            }
+        }
         if (mLoadingRemoved) {
             return;
         }

@@ -627,9 +627,7 @@ public class EUExWindow extends EUExBase {
         float nowScale = 1.0f;
         int versionA = Build.VERSION.SDK_INT;
 
-        if (versionA <= 18) {
-            nowScale = mBrwView.getScale();
-        }
+        nowScale = mBrwView.getScale();
         float sc = nowScale;
         String inType = parm[0];
         String inDataType = parm[1];
@@ -1085,9 +1083,7 @@ public class EUExWindow extends EUExBase {
 
         int versionA = Build.VERSION.SDK_INT;
 
-        if (versionA <= 18) {
-            nowScale = mBrwView.getScale();
-        }
+        nowScale = mBrwView.getScale();
         float sc = nowScale;
         String inPopName = parm[0];
         String windPopName = curWind.getName() + inPopName;
@@ -1312,9 +1308,7 @@ public class EUExWindow extends EUExBase {
 
         int versionA = Build.VERSION.SDK_INT;
 
-        if (versionA <= 18) {
-            nowScale = mBrwView.getScale();
-        }
+        nowScale = mBrwView.getScale();
         float sc = nowScale;
         String inPopName = parm[0];
         String inX = parm[1];
@@ -1384,9 +1378,7 @@ public class EUExWindow extends EUExBase {
 
         int versionA = Build.VERSION.SDK_INT;
 
-        if (versionA <= 18) {
-            nowScale = mBrwView.getScale();
-        }
+        nowScale = mBrwView.getScale();
         float sc = nowScale;
         String inContent = parm[0];
         String inMultiPopName = parm[1];
@@ -1645,9 +1637,7 @@ public class EUExWindow extends EUExBase {
         }
         float nowScale = 1.0f;
         int versionA = Build.VERSION.SDK_INT;
-        if (versionA <= 18) {
-            nowScale = mBrwView.getScale();
-        }
+        nowScale = mBrwView.getScale();
         float sc = nowScale;
         String inPopName = parm[0];
         String inX = parm[1];
@@ -2059,9 +2049,7 @@ public class EUExWindow extends EUExBase {
 
         int versionA = Build.VERSION.SDK_INT;
 
-        if (versionA <= 18) {
-            nowScale = mBrwView.getScale();
-        }
+        nowScale = mBrwView.getScale();
 
         float sc = nowScale;
         tx = tx * sc;
