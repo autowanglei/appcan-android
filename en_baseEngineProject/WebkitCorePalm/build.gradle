@@ -95,6 +95,10 @@ android {
         exclude 'META-INF/LICENSE.txt'
         exclude 'META-INF/NOTICE.txt'
     }
+    defaultConfig {
+        minSdkVersion 14
+        targetSdkVersion 14 //
+    }
     sourceSets {
         main {
             manifest.srcFile 'AndroidManifest.xml'
