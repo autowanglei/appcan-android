@@ -20,7 +20,6 @@ package org.zywx.wbpalmstar.engine.universalex;
 
 import android.content.Context;
 import android.os.Build;
-import android.webkit.WebView;
 
 import org.zywx.wbpalmstar.base.BDebug;
 import org.zywx.wbpalmstar.engine.EBrowserView;
@@ -90,7 +89,9 @@ public class EUExManager {
                 }
 
             } catch (Exception e) {
-                BDebug.e(e.toString());
+                if (BDebug.DEBUG){
+                    e.printStackTrace();
+                }
             }
             if (null != objectIntance) {
 //				String uexName = uName + symbol;
@@ -129,7 +130,7 @@ public class EUExManager {
         } catch (InvocationTargetException e) {
             BDebug.e(plugin.getUexName(),methodName, " InvocationTargetException");
             if (BDebug.DEBUG) {
-            e.printStackTrace();
+                e.printStackTrace();
             }
         }
         return null;
