@@ -66,7 +66,7 @@ public class ACEWebView extends XWalkView {
 	
 	protected void init(boolean webApp) {
 		setBackgroundColor(0);
-		setAlpha(0.99f);
+//		setAlpha(0.99f);
 		setDrawingCacheBackgroundColor(Color.TRANSPARENT);
 		setScrollbarFadingEnabled(false);
 		setFadingEdgeLength(0);
