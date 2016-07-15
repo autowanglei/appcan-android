@@ -33,7 +33,6 @@ import android.view.ViewParent;
 import android.view.animation.Animation;
 import android.view.animation.DecelerateInterpolator;
 import android.view.animation.TranslateAnimation;
-import android.webkit.WebView;
 import android.widget.FrameLayout;
 
 import com.slidingmenu.lib.SlidingMenu;
@@ -175,13 +174,9 @@ public class EBrowserWidget extends AbsoluteLayout {
         if (checkWindow(entry)) {
             return;
         }
-        EBrowserWindow newWindow = getInvalid();
-        if (null != newWindow) {
-            newWindow.setEBrowserWidget(EBrowserWidget.this);
-        } else {
-            newWindow = new EBrowserWindow(mContext,
-                    EBrowserWidget.this);
-        }
+        EBrowserWindow newWindow = null;
+        newWindow = new EBrowserWindow(mContext,
+                EBrowserWidget.this);
         if (entry.checkFlag(EBrwViewEntry.F_FLAG_NAV_TYPE)) {
             EBrowserWindow.sNavFlag = true;
         }
