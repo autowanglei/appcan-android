@@ -65,6 +65,7 @@ import org.zywx.wbpalmstar.base.vo.WindowEvaluateMultiPopoverScriptVO;
 import org.zywx.wbpalmstar.base.vo.WindowEvaluatePopoverScriptVO;
 import org.zywx.wbpalmstar.base.vo.WindowEvaluateScriptVO;
 import org.zywx.wbpalmstar.base.vo.WindowOpenMultiPopoverVO;
+import org.zywx.wbpalmstar.base.vo.WindowOpenPopoverVO;
 import org.zywx.wbpalmstar.base.vo.WindowOpenSlibingVO;
 import org.zywx.wbpalmstar.base.vo.WindowOpenVO;
 import org.zywx.wbpalmstar.base.vo.WindowPromptResultVO;
@@ -908,7 +909,7 @@ public class EUExWindow extends EUExBase {
         }
         if (slidingWindowVO.leftSliding != null) {
             slidingMode = SlidingMenu.LEFT;
-            with = Integer.parseInt(slidingWindowVO.leftSliding.width);
+            with = slidingWindowVO.leftSliding.width;
             url = slidingWindowVO.leftSliding.url;
             if (with > 0) {
                 activity.globalSlidingMenu.setBehindWidth(with);
@@ -921,7 +922,7 @@ public class EUExWindow extends EUExBase {
 
         if (slidingWindowVO.rightSliding != null) {
             slidingMode = SlidingMenu.RIGHT;
-            with = Integer.parseInt(slidingWindowVO.rightSliding.width);
+            with = slidingWindowVO.rightSliding.width;
             url = slidingWindowVO.rightSliding.url;
             if (with > 0) {
                 activity.globalSlidingMenu.setBehindWidth(with);
@@ -1055,29 +1056,34 @@ public class EUExWindow extends EUExBase {
 
 
     public void openPopover(String[] parm) {
-        if (parm.length < 10) {
-            return;
-        }
-        Message msg = new Message();
-        msg.obj = this;
-        msg.what = MSG_FUNCTION_OPEN_POP;
-        Bundle bd = new Bundle();
-        bd.putStringArray(TAG_BUNDLE_PARAM, parm);
-        msg.setData(bd);
-        if (parm.length > 11) {
-            //取第12个参数的延迟加载字段
-            long delay = 0l;
-            try {
-                JSONObject json = new JSONObject(parm[11]);
-                JSONObject data = new JSONObject(json.getString(EBrwViewEntry.TAG_EXTRAINFO));
-                if (data.has(EBrwViewEntry.TAG_DELAYTIME)) {
-                    delay = Long.valueOf(data.getString(EBrwViewEntry.TAG_DELAYTIME));
-                }
-            } catch (Exception e) {
+        if (isJsonString(parm[0])){
+            WindowOpenPopoverVO openVO=DataHelper.gson.fromJson(parm[0],WindowOpenPopoverVO.class);
+            WindowJsonWrapper.openPopover(this,openVO);
+        }else{
+            if (parm.length < 10) {
+                return;
             }
-            mHandler.sendMessageDelayed(msg, delay);
-        } else {
-            mHandler.sendMessage(msg);
+            Message msg = new Message();
+            msg.obj = this;
+            msg.what = MSG_FUNCTION_OPEN_POP;
+            Bundle bd = new Bundle();
+            bd.putStringArray(TAG_BUNDLE_PARAM, parm);
+            msg.setData(bd);
+            if (parm.length > 11) {
+                //取第12个参数的延迟加载字段
+                long delay = 0l;
+                try {
+                    JSONObject json = new JSONObject(parm[11]);
+                    JSONObject data = new JSONObject(json.getString(EBrwViewEntry.TAG_EXTRAINFO));
+                    if (data.has(EBrwViewEntry.TAG_DELAYTIME)) {
+                        delay = Long.valueOf(data.getString(EBrwViewEntry.TAG_DELAYTIME));
+                    }
+                } catch (Exception e) {
+                }
+                mHandler.sendMessageDelayed(msg, delay);
+            } else {
+                mHandler.sendMessage(msg);
+            }
         }
     }
 
@@ -1108,13 +1114,13 @@ public class EUExWindow extends EUExBase {
             marginBottom = parm[10];
         }
         boolean opaque = false;
-        /**赋初值，避免不传bgColor崩溃*/
+        /*赋初值，避免不传bgColor崩溃*/
         String bgColor = "#00000000";
         boolean hasExtraInfo = false;
         int hardware = -1;
         int downloadCallback = 0;
         String userAgent = "";
-        if (parm.length > 11) {
+        if (parm.length > 11 && parm[11] != null) {
             String jsonData = parm[11];
             try {
                 JSONObject json = new JSONObject(jsonData);
@@ -1394,11 +1400,11 @@ public class EUExWindow extends EUExBase {
         String inIndexSelect = parm[9];
 
         boolean opaque = false;
-        /**赋初值，避免不传bgColor崩溃*/
+        /*赋初值，避免不传bgColor崩溃*/
         String bgColor = "#00000000";
         boolean hasExtraInfo = false;
         int mainDownloadCallback = 0;
-        if (parm.length > 10) {
+        if (parm.length > 10&&parm[10]!=null) {
             String jsonData = parm[10];
             try {
                 JSONObject json = new JSONObject(jsonData);
@@ -1449,10 +1455,12 @@ public class EUExWindow extends EUExBase {
             if (null != inY && inY.length() != 0) {
                 y = (int) (Integer.valueOf(inY) * nowScale);
             }
-            if (null != inWidth && inWidth.length() != 0) {
+            if (null != inWidth && inWidth.length() != 0
+                    && !"0".equals(inWidth)) {
                 w = (int) (Integer.valueOf(inWidth) * nowScale);
             }
-            if (null != inHeight && inHeight.length() != 0) {
+            if (null != inHeight && inHeight.length() != 0
+                    && !"0".equals(inHeight)) {
                 h = (int) (Integer.valueOf(inHeight) * nowScale);
             }
             if (null != inFontSize && inFontSize.length() != 0) {
@@ -1485,7 +1493,10 @@ public class EUExWindow extends EUExBase {
             JSONArray jsonContent = content.getJSONArray("content");
             int j = jsonContent.length();
             Log.d("multi", "jsonContent num:" + j);
-
+            if (indexSelect < 0 || indexSelect >= j) {
+                indexSelect = 0;
+                Log.e("multi", "indexSelect is " + indexSelect + ", jsonContent num:" + j);
+            }
             childUrl = new String[j];
 
             for (int i = 0; i < jsonContent.length(); i++) {
@@ -1573,6 +1584,9 @@ public class EUExWindow extends EUExBase {
             }
             Log.d("multi", "popEntrys num:" + popEntrys.size());
         } catch (Exception e) {
+            if (BDebug.DEBUG){
+                e.printStackTrace();
+            }
             errorCallback(0, EUExCallback.F_E_UEXWINDOW_EVAL, "Illegal parameter");
             return;
         }
@@ -2688,33 +2702,49 @@ public class EUExWindow extends EUExBase {
     }
 
     public void prompt(String[] parm) {
+        WindowPromptVO promptVO=null;
+        int mode=0;
+        String inTitle ;
+        String inMessage ;
+        String inDefaultValue ;
+        String[] inButtonLables;
+        String hint = null;
+        String callbackId = null;
         if (isFirstParamExistAndIsJson(parm)){
-            WindowJsonWrapper.prompt(this,DataHelper.gson.fromJson(
+            promptVO=DataHelper.gson.fromJson(
                     parm[0], WindowPromptVO.class
-            ),parm.length>1?parm[1]:null);
-            return;
-        }
-        if (parm.length < 4) {
-            return;
+            );
+            inTitle=promptVO.title;
+            inMessage=promptVO.message;
+            inDefaultValue=promptVO.defaultValue;
+            inButtonLables=promptVO.buttonLabels.split(",");
+            hint=promptVO.hint;
+            mode=promptVO.mode;
+            if (parm.length>1) {
+                callbackId = parm[1];
+            }
+        }else{
+            inTitle = parm[0];
+            inMessage = parm[1];
+            inDefaultValue = parm[2];
+            inButtonLables = parm[3].split(",");
+            if (parm.length>4) {
+                hint =parm[4];
+            }
         }
         EBrowserWindow curWind = mBrwView.getBrowserWindow();
         if (null == curWind) {
             return;
         }
-        String inTitle = parm[0];
-        String inMessage = parm[1];
-        String inDefaultValue = parm[2];
-        String[] inButtonLables = parm[3].split(",");
         EDialogTask task = new EDialogTask();
         task.type = EDialogTask.F_TYPE_PROMPT;
         task.title = inTitle;
         task.msg = inMessage;
+        task.mode=mode;
         task.defaultValue = inDefaultValue;
         task.buttonLables = inButtonLables;
-        if (parm.length>4) {
-            task.hint =parm[4];
-        }
-        task.callbackId=parm.length>5?parm[5]:null;
+        task.hint =hint;
+        task.callbackId=callbackId;
         task.mUexWind = this;
         curWind.addDialogTask(task);
     }
@@ -2898,7 +2928,7 @@ public class EUExWindow extends EUExBase {
     }
 
     public void private_prompt(String inTitle, String inMessage, String inDefaultValue, String[] inButtonLables,
-                               String hint, final String callbackIdStr) {
+                               String hint, final String callbackIdStr, int mode) {
 		/*if (!((EBrowserActivity) mContext).isVisable()) {
 			return;
 		}*/
@@ -2907,7 +2937,7 @@ public class EUExWindow extends EUExBase {
         }
         final int callbackId=valueOfCallbackId(callbackIdStr);
         if (inButtonLables != null && inButtonLables.length == 2) {
-            mPrompt = PromptDialog.show(mContext, inTitle, inMessage, inDefaultValue,hint, inButtonLables[0], new
+            mPrompt = PromptDialog.show(mContext, inTitle, inMessage, inDefaultValue,hint, inButtonLables[0],mode, new
                     OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
@@ -2935,7 +2965,7 @@ public class EUExWindow extends EUExBase {
         resultVO.data=data;
         resultVO.index=index;
         if (callbackId!=-1){
-            callbackToJs(callbackId,false,DataHelper.gson.toJsonTree(resultVO));
+            callbackToJs(callbackId,false,resultVO.index,resultVO.data);
         }else{
             jsCallback(function_prompt, 0, EUExCallback.F_C_JSON, DataHelper.gson.toJson(resultVO));
         }
@@ -3001,7 +3031,6 @@ public class EUExWindow extends EUExBase {
         if (length < 3 || op) {
             return;
         }
-        EBrowser.setFlag(EBrowser.F_BRW_FLAG_OPENING);
         String inTitle = params[0];
         String inCancel = params[1];
         final String[] btnLabels = params[2].split(",");
@@ -3015,13 +3044,11 @@ public class EUExWindow extends EUExBase {
             @Override
             public void onItemClicked(ActionSheetDialog dialog, int postion) {
                 resultActionSheet(postion,finalCallbackId);
-                EBrowser.clearFlag();
             }
 
             @Override
             public void onCanceled(ActionSheetDialog dialog) {
                 resultActionSheet(btnLabels.length, finalCallbackId);
-                EBrowser.clearFlag();
             }
         });
     }

@@ -5,12 +5,11 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Message;
+import android.text.TextUtils;
 import android.view.KeyEvent;
 import android.webkit.ValueCallback;
 import android.widget.EditText;
-
 import org.xwalk.core.XWalkJavascriptResult;
 import org.xwalk.core.XWalkUIClient;
 import org.xwalk.core.XWalkView;
@@ -23,6 +22,7 @@ import org.zywx.wbpalmstar.engine.ESystemInfo;
 import org.zywx.wbpalmstar.engine.universalex.EUExManager;
 import org.zywx.wbpalmstar.engine.universalex.EUExScript;
 import org.zywx.wbpalmstar.engine.universalex.EUExUtil;
+import org.zywx.wbpalmstar.widgetone.dataservice.WDataManager;
 
 public class CBrowserMainFrame extends XWalkUIClient {
     protected String mParms;
@@ -37,8 +37,40 @@ public class CBrowserMainFrame extends XWalkUIClient {
     @Override
     public boolean onConsoleMessage(XWalkView view, String message,
                                     int lineNumber, String sourceId, ConsoleMessageType messageType) {
+        if (WDataManager.sRootWgt!=null&&WDataManager.sRootWgt.m_appdebug==1 && !TextUtils.isEmpty(WDataManager.sRootWgt.m_logServerIp)) {
+            if (messageType !=ConsoleMessageType.WARNING) {//过滤掉warning
+                BDebug.sendUDPLog(formatConsole(message,lineNumber,sourceId,messageType));
+            }
+        }
         return super.onConsoleMessage(view, message, lineNumber, sourceId,
                 messageType);
+    }
+
+
+    private static String formatConsole( String message,
+                                         int lineNumber, String sourceId, ConsoleMessageType messageType){
+        StringBuilder stringBuilder=new StringBuilder();
+        stringBuilder.append("[ ")
+                .append(simpleSourceInfo(sourceId))
+                .append(" line : ")
+                .append(lineNumber)
+                .append(" ")
+                .append(messageType.toString().toLowerCase())
+                .append(" ]\n")
+                .append(message)
+                .append("\n");
+        return stringBuilder.toString();
+    }
+
+
+    private static String simpleSourceInfo(String source){
+        if (TextUtils.isEmpty(source)){
+            return "";
+        }
+        if (source.contains("/")){
+            return source.substring(source.lastIndexOf("/")+1);
+        }
+        return source;
     }
 
     @Override
@@ -130,11 +162,9 @@ public class CBrowserMainFrame extends XWalkUIClient {
             mIsPageOnload = true;
             ESystemInfo info = ESystemInfo.getIntence();
             if (!target.isWebApp()) { // 4.3及4.3以下手机
-                if (!info.mScaled) {
-                    info.mDefaultFontSize = (int) (info.mDefaultFontSize / target.getScaleWrap());
-                    info.mScaled = true;
-                }
-//				target.setDefaultFontSize(48);
+                info.mDefaultFontSize = (int) (info.mDefaultFontSize / target.getScaleWrap());
+                info.mScaled = true;
+                target.setDefaultFontSize(info.mDefaultFontSize);
             }
             if (!info.mFinished) {
                 ((EBrowserActivity) target.getContext())

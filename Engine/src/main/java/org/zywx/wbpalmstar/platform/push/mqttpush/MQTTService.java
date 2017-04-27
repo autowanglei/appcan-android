@@ -992,6 +992,15 @@ public class MQTTService implements MqttSimpleCallback {
         public void onReceive(Context context, Intent intent) {
             String action = intent.getAction();
             if (MQTT_PING_ACTION.equals(action)) {
+                pingSenderThread();
+            }
+        }
+    }
+
+    private void pingSenderThread() {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
                 // Note that we don't need a wake lock for this method (even though
                 // it's important that the phone doesn't switch off while we're
                 // doing this).
@@ -1008,28 +1017,30 @@ public class MQTTService implements MqttSimpleCallback {
                         mqttClient.ping();
                         keepAliveSeconds = mHeartKeepAliveMgr
                                 .calcHeartSucceed(keepAliveSeconds);
+
+                        // start the next keep alive period
+                        scheduleNextPing();
                     }
                 } catch (MqttException e) {
                     // if something goes wrong, it should result in connectionLost
                     // being called, so we will handle it there
                     PushReportUtility.oe("PingSender ping failed", e);
 
-                    // assume the client connection is broken - trash it
-                    try {
-                        mqttClient.disconnect();
-                    } catch (MqttPersistenceException e1) {
-                        PushReportUtility.oe("PingSender disconnect failed", e);
+                    if (null != mqttClient) {
+                        // assume the client connection is broken - trash it
+                        try {
+                            mqttClient.disconnect();
+                        } catch (MqttPersistenceException e1) {
+                            PushReportUtility.oe("PingSender disconnect failed", e);
+                        }
+                        keepAliveSeconds = mHeartKeepAliveMgr
+                                .calcHeartFailed(keepAliveSeconds);
+                        // reconnect
+                        connectToBrokerThread();
                     }
-                    keepAliveSeconds = mHeartKeepAliveMgr
-                            .calcHeartFailed(keepAliveSeconds);
-                    // reconnect
-                    connectToBrokerThread();
                 }
-
-                // start the next keep alive period
-                scheduleNextPing();
             }
-        }
+        }).start();
     }
 
     /************************************************************************/

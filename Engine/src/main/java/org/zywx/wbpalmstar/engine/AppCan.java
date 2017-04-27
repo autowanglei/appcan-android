@@ -9,6 +9,8 @@ import android.content.res.Resources;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.support.annotation.Keep;
+import android.text.TextUtils;
 
 import org.xmlpull.v1.XmlPullParser;
 import org.zywx.wbpalmstar.acedes.ACEDes;
@@ -16,10 +18,12 @@ import org.zywx.wbpalmstar.base.BConstant;
 import org.zywx.wbpalmstar.base.BDebug;
 import org.zywx.wbpalmstar.base.BUtility;
 import org.zywx.wbpalmstar.base.WebViewSdkCompat;
+import org.zywx.wbpalmstar.base.cache.DiskCache;
 import org.zywx.wbpalmstar.base.listener.OnAppCanFinishListener;
 import org.zywx.wbpalmstar.base.listener.OnAppCanInitListener;
 import org.zywx.wbpalmstar.base.util.SpManager;
 import org.zywx.wbpalmstar.base.vo.NameValuePairVO;
+import org.zywx.wbpalmstar.base.vo.SubWidgetToStartVO;
 import org.zywx.wbpalmstar.engine.universalex.EUExUtil;
 import org.zywx.wbpalmstar.engine.universalex.ThirdPluginMgr;
 import org.zywx.wbpalmstar.engine.universalex.ThirdPluginObject;
@@ -34,14 +38,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import static org.zywx.wbpalmstar.engine.LoadingActivity.KEY_INTENT_WIDGET_DATA;
-
 /**
  * Created by ylt on 16/9/1.
  */
 public class AppCan {
 
     public static final String ACTION_APPCAN_SDK="action.appcan.sdk";
+    public static final String INTENT_APPCAN_SDK_CUSTOM_MASK_CLASSNAME ="intent.appcan.sdk.custom.mask.className";
     private static AppCan sAppCan;
     private ThirdPluginMgr mThirdPluginMgr;
     private ELinkedList<EngineEventListener> mListenerQueue;
@@ -51,6 +54,10 @@ public class AppCan {
     private WWidgetData mWidgetData;
     private boolean mIsWidgetSdk =true;
     OnAppCanFinishListener mFinishListener;
+
+    SubWidgetToStartVO mSubWidgetToStartVO =null;
+
+
     private AppCan(){
     }
 
@@ -61,6 +68,7 @@ public class AppCan {
         return sAppCan;
     }
 
+    @Keep
     public WWidgetData getRootWidgetData(){
         return mWidgetData;
     }
@@ -78,6 +86,7 @@ public class AppCan {
         mListenerQueue.add(pushlistener);
         BDebug.init();
         BConstant.app = (Application) mContext;
+        DiskCache.initDiskCache(mContext);
         ACEDes.setContext(mContext);
         EUExUtil.init(mContext);
         WebViewSdkCompat.initInApplication(mContext);
@@ -95,7 +104,11 @@ public class AppCan {
         //清除上次运行的Session 数据
         SpManager.getInstance().clearSession();
         WDataManager wDataManager = new WDataManager(mContext);
-        mWidgetData = wDataManager.getWidgetData();
+        if (wDataManager.isHasAssetsWidget()) {
+            mWidgetData = wDataManager.getWidgetData();
+        } else {
+            mWidgetData = wDataManager.getDefaultWidgetData();
+        }
         boolean success=isInitSuccess();
         if (success) {
             BUtility.initWidgetOneFile(mContext, mWidgetData.m_appId);
@@ -134,7 +147,7 @@ public class AppCan {
      * @param activity
      * @param bundle 传递给网页的数据
      */
-    public void start(final Activity activity, final Bundle bundle){
+    public void start(final Activity activity, final WWidgetData widgetData, final Bundle bundle){
         activity.runOnUiThread(new Runnable() {
             @Override
             public void run() {
@@ -146,14 +159,59 @@ public class AppCan {
                 if (null != bundle) {
                     intent.putExtras(bundle);
                 }
-                if (mWidgetData != null) {
-                    intent.putExtra(KEY_INTENT_WIDGET_DATA, mWidgetData);
-                }
+                intent.putExtra(EBrowserActivity.KET_WIDGET_DATE,widgetData);
                 activity.startActivity(intent);
                 activity.overridePendingTransition(EUExUtil.getResAnimID("platform_myspace_no_anim")
                         , EUExUtil.getResAnimID("platform_myspace_no_anim"));
             }
         });
+
+    }
+
+    /**
+     *
+     * @param activity
+     * @param bundle 传递给网页的数据
+     * @param path 需要打开的widget目录路径
+     */
+    public void startCustomWidget(Activity activity, Bundle bundle, String path){
+        if (!path.endsWith("/")) {
+            path = path + "/";
+        }
+        WDataManager wDataManager = new WDataManager(mContext);
+        WWidgetData data = wDataManager.getWidgetDataByXML(path + "config.xml", 0);
+        if (data != null) {
+            BUtility.initWidgetOneFile(mContext, data.m_appId);
+        }
+        if (data.m_obfuscation == 1) {
+            String packg = mContext.getPackageName();
+            String contentPrefix = "content://" + packg + ".sp/android_asset/";
+            data.m_indexUrl = contentPrefix + data.m_indexUrl.substring("file:///".length());
+            data.m_obfuscation = 0;
+        }
+        start(activity, data, bundle);
+    }
+
+    public SubWidgetToStartVO getSubWidgetToStart(){
+        return mSubWidgetToStartVO;
+    }
+
+    public void setSubWidgetToStart(SubWidgetToStartVO subWidgetToStartVO){
+        this.mSubWidgetToStartVO = subWidgetToStartVO;
+    }
+    public void start(Activity activity, SubWidgetToStartVO startVO, Bundle bundle){
+        mSubWidgetToStartVO =startVO;
+        start(activity,mWidgetData,bundle);
+    }
+
+    public void startSubWidget(Activity activity,Bundle bundle,String appId,String appKey){
+        WDataManager widgetData = new WDataManager(mContext);
+        WWidgetData data = widgetData.getWidgetDataByAppId(appId,
+                mWidgetData);
+        if (!TextUtils.isEmpty(appKey)) {
+            data.m_appkey = appKey;
+        }
+        start(activity,data,bundle);
 
     }
 
@@ -170,10 +228,9 @@ public class AppCan {
      * @param bundle 传递给网页的数据
      */
     public void start(Activity activity,String indexUrl,Bundle bundle){
-        if (mWidgetData!=null){
-            mWidgetData.m_indexUrl=indexUrl;
-        }
-        start(activity,bundle);
+        WWidgetData tempWidgetData=mWidgetData.clone();
+        tempWidgetData.m_indexUrl=indexUrl;
+        start(activity,tempWidgetData,bundle);
     }
 
     private void reflectionPluginMethod(String method) {

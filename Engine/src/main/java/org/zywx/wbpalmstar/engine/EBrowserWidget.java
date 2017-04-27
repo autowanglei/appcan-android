@@ -493,7 +493,9 @@ public class EBrowserWidget extends AbsoluteLayout {
     }
 
     public void onAppStop() {
-        mBroWindow.onAppStop();
+        if (mBroWindow != null) {
+            mBroWindow.onAppStop();
+        }
         EBrowserWindow root = mEWindowStack.get("root");
         if (mBroWindow != root) {
             root.onAppStop();
@@ -668,7 +670,7 @@ public class EBrowserWidget extends AbsoluteLayout {
                         mBroWindow.setVisibility(GONE);
                     }
                 }
-
+                inWhich.requestFocus();
                 inWhich.notifyVisibilityChanged(0);
                 inWhich.clearFlag();
                 mBroWindow.notifyVisibilityChanged(1);
@@ -795,10 +797,11 @@ public class EBrowserWidget extends AbsoluteLayout {
     }
 
     public void putInvalid(EBrowserWindow view) {
-        if (null == mGarbViewHeap) {
-            mGarbViewHeap = new EWindGarbHeap();
-        }
-        mGarbViewHeap.put(view);
+//        if (null == mGarbViewHeap) {
+//            mGarbViewHeap = new EWindGarbHeap();
+//        }
+//        mGarbViewHeap.put(view);
+        view.destory();
     }
 
     private EBrowserWindow getInvalid() {

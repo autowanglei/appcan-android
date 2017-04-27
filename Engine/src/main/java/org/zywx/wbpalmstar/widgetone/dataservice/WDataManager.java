@@ -108,8 +108,8 @@ public class WDataManager {
         m_preferences = m_context.getSharedPreferences(m_widgetOneConfig,
                 Context.MODE_PRIVATE);
 
-        m_sboxPath = context.getFilesDir().getPath() + "/";
-        m_exterboxPath = context.getExternalFilesDir(null).getPath() + "/";
+        m_sboxPath = BUtility.getSBoxRootPath(context);
+        m_exterboxPath = BUtility.getExterBoxPath(context);
     }
 
     public static WWidgetData getLoginListWgt(String mainAppId,
@@ -778,6 +778,27 @@ public class WDataManager {
     // return sbf.toString();
     // }
 
+    public boolean isHasAssetsWidget() {
+        try {
+            InputStream in = m_context.getAssets().open(m_rootWidgetConfigPath);
+            if (in != null) {
+                in.close();
+                return true;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+        return false;
+    }
+
+    public WWidgetData getDefaultWidgetData() {
+        WWidgetData widgetData = new WWidgetData();
+        widgetData.m_appId = "default";
+        widgetData.m_indexUrl = "index.html";
+        return widgetData;
+    }
+
     /**
      * 得到当前应用
      *
@@ -1186,7 +1207,7 @@ public class WDataManager {
         return "0";
     }
 
-    private WWidgetData getWidgetDataByXML(String path, int type) {
+    public WWidgetData getWidgetDataByXML(String path, int type) {
         WWidgetData widgetData = null;
         InputStream inputStream = null;
         try {

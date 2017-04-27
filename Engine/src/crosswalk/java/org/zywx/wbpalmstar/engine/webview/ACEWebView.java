@@ -57,12 +57,13 @@ public class ACEWebView extends XWalkView {
 	private CBrowserWindow mCBrowserWindow;
     private EBrowserWindow mBroWind;
     private int mDownloadCallback = 0;  // 0 下载不回调，使用引擎下载; 1 下载回调给主窗口，前端自己下载; 2 下载回调给当前窗口，前端自己下载;
+    private boolean mWebApp;
 	
 	public ACEWebView(Context context) {
 		super(context);
 	}
 
-	protected void init(EBrowserView eBrowserView, boolean webApp) {
+	protected void init(EBrowserView eBrowserView) {
 		setBackgroundColor(0);
 		setAlpha(0.99f);
 		setDrawingCacheBackgroundColor(Color.TRANSPARENT);
@@ -87,10 +88,18 @@ public class ACEWebView extends XWalkView {
 			}
 			
 		});
-		if (webApp) {
+		if (mWebApp) {
 			return;
 		}
 	}
+
+    public void setWebApp(boolean flag) {
+        mWebApp = flag;
+    }
+
+    public boolean isWebApp() {
+        return mWebApp;
+    }
 
 	@SuppressLint("NewApi")
 	public void pauseCore() {
@@ -105,12 +114,12 @@ public class ACEWebView extends XWalkView {
 	}
 
 	public void setDefaultFontSize(int size) {
-//        getSettings().setDefaultFontSize(size);
-//        getSettings().setDefaultFixedFontSize(size);
+		getSettings().setDefaultFontSize(size);
+		getSettings().setDefaultFixedFontSize(size);
 	}
 
 	public void setSupportZoom() {
-
+        getSettings().setSupportZoom(true);
 	}
 
     public void setUserAgent(String userAgent) {
@@ -167,12 +176,12 @@ public class ACEWebView extends XWalkView {
 	}
 
 	public float getScale() {
-		float density= ESystemInfo.getIntence().mDensity;
-		return super.getScaleX()*density;
+//		float density= ESystemInfo.getIntence().mDensity;
+		return super.getScaleX();
 	}
 
 	public int getContentHeight() {
-		return super.getMeasuredHeight();
+		return super.getContentHeight();
 	}
 
 	public void setWebViewClient() {

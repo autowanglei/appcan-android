@@ -20,6 +20,7 @@ package org.zywx.wbpalmstar.engine;
 
 import org.json.JSONObject;
 import org.zywx.wbpalmstar.base.BUtility;
+import org.zywx.wbpalmstar.base.WebViewSdkCompat;
 import org.zywx.wbpalmstar.engine.external.Compat;
 import org.zywx.wbpalmstar.engine.universalex.EUExScript;
 
@@ -57,7 +58,7 @@ public class EBounceView extends LinearLayout {
     private boolean mTopNotify;
     private boolean mBottomNotify;
     private boolean mTopAutoRefresh = false;
-    private boolean isSupportSwipeCallback = false;//is need callback,set by API interface.
+    private boolean isSupportSwipeCallback = true;// 兼容旧引擎，把默认值从false改为true，要防止与多浮动窗口的手势冲突需要调用接口设置为false
     private int mTopState;
     private int mBottomState;
     private int mTopBund;
@@ -471,8 +472,13 @@ public class EBounceView extends LinearLayout {
 
     private boolean bottomCanBounce() {
         float nowScale= mBrwView.getScaleWrap();
-        int h1 = (int) (mBrwView.getContentHeight() * nowScale);
+        int h1 ;
         int h2 = mBrwView.getScrollYWrap() + mBrwView.getHeightWrap();
+        if ("crosswalk".equals(WebViewSdkCompat.type)){
+            h1 = (int) (mBrwView.getContentHeight() );
+        }else{
+            h1 = (int) (mBrwView.getContentHeight() * nowScale);
+        }
         if (h1 <= h2 + 5) {
             return true;
         } else {
